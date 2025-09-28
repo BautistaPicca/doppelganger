@@ -9,3 +9,8 @@ class BoundingBox(NamedTuple):
     height: int
     confidence: float
     landmarks: Dict[str, Tuple[int, int]]
+
+@dataclass
+class MatchResult:
+    index: int
+    score: float
