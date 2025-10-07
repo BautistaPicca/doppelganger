@@ -8,8 +8,8 @@ class CosineFaceMatcher(FaceMatcher):
         results = []
         for idx, candidate in enumerate(database):
             score = np.dot(embedding, candidate)  # Similitud coseno
-            results.append(MatchResult(index=idx, score=score))
+            results.append(MatchResult(index=idx, similarity=score))
 
         # Ordenar por "score" descendente
-        results.sort(key=lambda r: r.score, reverse=True)
+        results.sort(key=lambda r: r.similarity, reverse=True)
         return results
