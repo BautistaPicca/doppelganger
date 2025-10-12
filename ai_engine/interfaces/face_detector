@@ -1,0 +1,48 @@
+from facenet_pytorch import MTCNN
+from PIL import Image
+import matplotlib.pyplot as plt
+import os
+
+#Creamos el detector de rostros
+mtcnn = MTCNN(image_size=160, margin=40)
+
+#Carpetas de entrada y salida
+input_base = r"C:\Users\joaqu\OneDrive\Desktop\FootballPrueba"
+output_base = r"C:\Users\joaqu\OneDrive\Desktop\Recortados"
+os.makedirs(output_base, exist_ok=True)
+
+#Recorrer cada carpeta de jugador 
+for player_name in os.listdir(input_base):
+    player_input_folder = os.path.join(input_base, player_name)
+    player_output_folder = os.path.join(output_base, player_name)
+    os.makedirs(player_output_folder, exist_ok=True)
+
+    #Recorrer la imagenes de cada jugador dentro de la carpeta
+    for filename in os.listdir(player_input_folder):
+        if filename.lower().endswith((".png", ".jpg", ".jpeg")):
+            img_path = os.path.join(player_input_folder,filename)
+            img = Image.open(img_path)
+
+            #Detectamos y recortamos la cara 
+            face = mtcnn(img)
+            if face is not None: 
+                #Convertimos el tensor de Pytorch (C,W,H) -> (H,W,C)
+                face_np = face.permute(1,2,0).detach().cpu().numpy()
+
+                #Re-mapeamos de [-1,1] a [0,1] y despues a [0,255] para evitar los colores saturados
+                face_np = ((face_np +1)/ 2.0 * 255).astype('uint8')
+
+                #Creamos una imagen PIL a partir del array
+                face_img = Image.fromarray(face_np)
+
+                #Visualizamos el recorte
+                plt.imshow(face_img)
+                plt.title(f"{player_name} - {filename}")
+                plt.axis("off")
+                plt.show() #Mostramos el recorte antes de guardar
+
+                #Guardamos el recorte
+                face_img.save(os.path.join(player_output_folder, filename))
+                print(f"[OK] {player_name} - {filename}")
+            else:
+                print(f"[NO FACE DETECTED] {player_name} - {filename}")
