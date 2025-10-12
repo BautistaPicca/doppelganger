@@ -6,25 +6,27 @@ y guarda la base en embeddings_db.pkl
 
 import os
 import torch
-import torch.nn.functional as F # Importamos F para la normalización
-from facenet_pytorch import InceptionResnetV1, MTCNN
-from PIL import Image
 import pickle
 import numpy as np
+from PIL import Image
 
-# Ruta del dataset de jugadores
+# Importamos la implementación de la interfaz FaceEmbedder
+from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder 
+from facenet_pytorch import MTCNN # Necesario para la detección/alineación
+
+# Rutas y configuración
 dataset_dir = "ai_engine/FootballPlayers"
-
-# Inicializar detector de caras y modelo de embeddings
-# Determina si usar CUDA (GPU) o CPU
+db_path = "ai_engine/embeddings_db.pkl"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 print(f"Usando dispositivo: {device}")
 
-# MTCNN (Detector/Alineador) - prepara la imagen para el FaceNet (160x160)
+# 1. Inicializar Detector y Embedder
+# MTCNN (Detector/Alineador) - se queda aquí para preparar la entrada
 mtcnn = MTCNN(image_size=160, margin=0, device=device)
 
-# ResNet (Modelo de Embeddings) - FaceNet InceptionResnetV1
-resnet = InceptionResnetV1(pretrained="vggface2").eval().to(device)
+# El Embedder ahora encapsula el modelo FaceNet y la Normalización L2
+embedder = FacenetPyTorchEmbedder()
 
 embeddings_db = {}
 
@@ -38,38 +40,26 @@ for filename in os.listdir(dataset_dir):
         # Abrir imagen
         img = Image.open(path)
 
-        # 1. Detectar y Recortar cara (MTCNN)
-        # El resultado 'face' es un tensor de PyTorch alineado (3x160x160)
-        face = mtcnn(img) 
+        # 2. Detectar y Recortar cara (MTCNN)
+        # El resultado 'face_tensor' es un tensor de PyTorch alineado (3x160x160)
+        face_tensor = mtcnn(img) 
         
-        if face is not None:
-            # 2. Preparar para el modelo: Añadir dimensión de Batch y mover al dispositivo
-            face = face.unsqueeze(0).to(device) # Convierte a (1x3x160x160)
+        if face_tensor is not None:
             
-            # Desactiva el cálculo de gradientes
-            with torch.no_grad():
-                # 3. Generar el Embedding
-                embedding = resnet(face)
-
-                # 4. NORMALIZACIÓN L2 (Paso crucial para FaceNet)
-                # Normaliza el vector para que tenga longitud unitaria (512 dimensiones)
-                embedding = F.normalize(embedding, p=2, dim=1)
-                
-            # Mover el tensor a la CPU y convertirlo a array NumPy para guardar
-            embedding_np = embedding.cpu().numpy()
-
-            # 5. Guardar embedding en la base de datos
+            # 3. Generar el Embedding (Delegado a la clase FacenetPyTorchEmbedder)
+            # El método embed retorna el array NumPy normalizado (1x512)
+            embedding_np = embedder.embed(face_tensor) 
+            
+            # 4. Guardar embedding en la base de datos
             if name not in embeddings_db:
                 embeddings_db[name] = []
-            
-            # Guardamos el array NumPy (de tamaño 1x512)
+                
             embeddings_db[name].append(embedding_np) 
 
 # Imprimir resumen
 print(f"\nEmbeddings generados para {len(embeddings_db)} jugadores:", list(embeddings_db.keys()))
 
 # Guardar base de embeddings
-db_path = "ai_engine/embeddings_db.pkl"
 with open(db_path, "wb") as f:
     pickle.dump(embeddings_db, f)
 
