@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, List, NamedTuple
+from typing import Optional, Tuple, Dict, List, NamedTuple
 import numpy as np
 from dataclasses import dataclass
 
@@ -14,3 +14,9 @@ class BoundingBox(NamedTuple):
 class MatchResult:
     index: int
     similarity: float
+
+@dataclass
+class FaceRecord:
+    name: str
+    vector: np.ndarray
+    metadata: Optional[Dict] = None
