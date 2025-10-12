@@ -1,42 +1,25 @@
-import faiss
 import numpy as np
 from typing import List
 
 from ai_engine.interfaces.face_matcher import FaceMatcher
 from ai_engine.types import MatchResult
+from ai_engine.utils.faiss_index import FaissIndex
 
 class FaissFaceMatcher(FaceMatcher):
-    def __init__(self, metric: str = "cosine"):
-        """
-        metric: 'cosine'
-        """
+    def __init__(self, index: FaissIndex, metric: str = "cosine"):
         if metric != "cosine":
             raise ValueError("Solo se soporta la métrica 'cosine'")
         self.metric = metric
-        self.index = None
-        self.database = None
-
-    def _build_index(self, database: List[np.ndarray]):
-        embeddings = np.stack(database).astype("float32")
-        faiss.normalize_L2(embeddings)
-        index = faiss.IndexFlatIP(embeddings.shape[1])
-        index.add(embeddings)
-        return index
+        self.index = index  # instancia de FaissIndex ya construida
     
-    def match(self, embedding: np.ndarray, database: List[np.ndarray]) -> List[MatchResult]:
-        if self.index is None or self.database is not database:
-            self.index = self._build_index(database)
-            self.database = database
-
-        query = embedding.reshape(1, -1).astype("float32")
-        faiss.normalize_L2(query)
-
-        distances, indices = self.index.search(query, k=len(database))
+    def match(self, embedding: np.ndarray, k: int = 5) -> List[MatchResult]:
+        distances, ids = self.index.search(embedding, k)
 
         results = []
-        for i, score in zip(indices[0], distances[0]):
+        for idx, score in zip(ids, distances):
+            name = self.index.name_lookup[int(idx)]
             similarity = round(score * 100, 2)
-            results.append(MatchResult(i, similarity))
+            results.append(MatchResult(name=name, similarity=similarity))
 
         results.sort(key=lambda r: r.similarity, reverse=True)
         return results

@@ -7,7 +7,7 @@ class FaceMatcher:
     Interfaz base para comparación de embeddings faciales.
     Las implementaciones deben calcular similitud entre vectores y retornar los matches más cercanos.
     """
-    def match(self, embedding: np.ndarray, database: List[np.ndarray]) -> List[MatchResult]:
+    def match(self, embedding: np.ndarray, k: int = 5) -> List[MatchResult]:
         """
         Compara un embedding contra una base de datos.
         Args:
