@@ -28,7 +28,7 @@ class FaissIndex:
         self.index = faiss.IndexIDMap(faiss.IndexFlatIP(dim))
         self.name_lookup: Dict[int, str] = {}
         if from_dir:
-            self._load(from_dir)
+            self._load(Path(from_dir))
 
     """Agrega múltiples registros al índice.
     Args:
@@ -75,4 +75,4 @@ class FaissIndex:
     def _load(self, path: Path):
         self.index = faiss.read_index(str(path / "index"))
         with open(path / "names.json", "r") as f:
-            self.name_lookup = json.load(f)
+            self.name_lookup = {int(k): v for k, v in json.load(f).items()}
