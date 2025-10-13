@@ -2,12 +2,14 @@
 import json
 from pathlib import Path
 import shutil
-from PIL import Image, ImageOps
+from PIL import Image
 import numpy as np
 import torch
 from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
 from facenet_pytorch import MTCNN
 from torchvision import transforms
+
+from ai_engine.utils.pre_processing import pad_and_resize
 
 DATASET_ROOT = Path("run/dataset")
 OUTPUT_ROOT = Path("run/processed")
@@ -23,22 +25,6 @@ OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 mtcnn = MTCNN(image_size=160, device=device)
 embedder = FacenetPyTorchEmbedder()
-
-"""
-Ajusta las dimensiones de la imagen para que se adapte al modelo usado,
-En este caso de prueba, InceptionResnetV1, que requiere 160x160.
-Las imagenes usadas son de un dataset dónde cada imagen es 92x112,
-Por lo que se agrega padding para hacerlas cuadradas y luego se redimensiona con el fin de no distorsionar la imagen.
-"""
-def pad_and_resize(image: Image.Image, target_size=(160, 160)) -> Image.Image:
-    image = image.convert("RGB")
-    w, h = image.size
-    delta_w = h - w if h > w else 0
-    delta_h = w - h if w > h else 0
-    padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
-    padded = ImageOps.expand(image, padding, fill=(0, 0, 0))
-    resized = padded.resize(target_size, Image.BILINEAR)
-    return resized
 
 # TODO: Tomar más de una imagen por persona para mejorar los resultados
 for person_dir in DATASET_ROOT.iterdir():
