@@ -9,8 +9,8 @@ from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmb
 from facenet_pytorch import MTCNN
 from torchvision import transforms
 
-DATASET_ROOT = Path("dataset")
-OUTPUT_ROOT = Path("processed")
+DATASET_ROOT = Path("run/dataset")
+OUTPUT_ROOT = Path("run/processed")
 
 if not DATASET_ROOT.exists():
     raise ValueError(f"El directorio {DATASET_ROOT} no existe.")
