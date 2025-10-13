@@ -13,6 +13,7 @@ class BoundingBox(NamedTuple):
 @dataclass
 class MatchResult:
     index: int
+    name: str
     similarity: float
 
 @dataclass
