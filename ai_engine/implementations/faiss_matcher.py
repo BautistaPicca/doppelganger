@@ -19,7 +19,7 @@ class FaissFaceMatcher(FaceMatcher):
         for idx, score in zip(ids, distances):
             name = self.index.name_lookup[int(idx)]
             similarity = round(score * 100, 2)
-            results.append(MatchResult(name=name, similarity=similarity))
+            results.append(MatchResult(index=idx, name=name, similarity=similarity))
 
         results.sort(key=lambda r: r.similarity, reverse=True)
         return results
