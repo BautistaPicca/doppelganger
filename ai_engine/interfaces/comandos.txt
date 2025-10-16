@@ -1,0 +1,15 @@
+# 1) Ir a la carpeta del repo
+cd "C:\Users\matii\Desktop\doppelganger-main"
+
+(venv310) al inicio, activalo:
+.\venv310\Scripts\Activate.ps1
+
+
+
+
+Ejecutar tu script
+python ai_engine\interfaces\face_detector.py
+python ai_engine\interfaces\face_aligner.py
+
+
+
