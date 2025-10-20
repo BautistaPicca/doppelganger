@@ -15,6 +15,7 @@ class MatchResult:
     index: int
     name: str
     similarity: float
+    image: Optional[str]
 
 @dataclass
 class FaceRecord:
