@@ -31,4 +31,4 @@ class MatcherService:
         tensor = transforms.ToTensor()(processed)
         embedding = self.embedder.embed(tensor)
         results = self.matcher.match(embedding, k=k)
-        return [{"name": r.name, "similarity": float(r.similarity)} for r in results]
+        return [{"name": r.name, "similarity": float(r.similarity), "image": r.image} for r in results]
