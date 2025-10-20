@@ -8,3 +8,6 @@ venv/
 env/
 nenv/
 .venv/
+
+web/node_modules/
+web/.next/
