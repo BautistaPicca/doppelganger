@@ -1,18 +1,10 @@
-from typing import Dict, Tuple
+from abc import ABC, abstractmethod
 import numpy as np
+from ai_engine.types import BoundingBox
 
-class FaceAligner:
-    """
-    Interfaz base para alineación facial.
-    Las implementaciones deben usar landmarks para normalizar la pose del rostro.
-    """
-    def align(self, image: np.ndarray, landmarks: Dict[str, Tuple[int, int]]) -> np.ndarray:
-        """
-        Alinea el rostro usando landmarks faciales.
-        Args:
-            image (np.ndarray): Imagen original.
-            landmarks (Dict[str, Tuple[int, int]]): Coordenadas de ojos, nariz, boca.
-        Returns:
-            np.ndarray: Imagen alineada en tamaño estándar.
-        """
-        raise NotImplementedError("Este método debe ser implementado por una subclase.")
+class FaceAligner(ABC):
+    """Interfaz base para alineación facial usando BoundingBox + landmarks."""
+    @abstractmethod
+    def align(self, image_rgb: np.ndarray, bbox: BoundingBox) -> np.ndarray:
+        """Devuelve la cara alineada como np.ndarray (RGB, output_size x output_size x 3)."""
+        ...

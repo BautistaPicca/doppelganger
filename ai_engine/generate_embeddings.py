@@ -1,66 +1,100 @@
-"""
-generate_embeddings.py
-Genera embeddings faciales de las imágenes del dataset de futbolistas
-y guarda la base en embeddings_db.pkl
-"""
-
-import os
-import torch
-import pickle
-import numpy as np
+import json
+from pathlib import Path
+import shutil
 from PIL import Image
+import numpy as np
+import torch
 
-# Importamos la implementación de la interfaz FaceEmbedder
-from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder 
-from facenet_pytorch import MTCNN # Necesario para la detección/alineación
+# Importación del embedder facial propio basado en FaceNet (InceptionResnetV1)
+from ai_engine.implementations.custom_facenet_embedder import CustomFaceNetEmbedder
 
-# Rutas y configuración
-dataset_dir = "ai_engine/FootballPlayers"
-db_path = "ai_engine/embeddings_db.pkl"
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# Se mantiene MTCNN para detección y alineación facial temporal
+from facenet_pytorch import MTCNN
+from torchvision import transforms
 
-print(f"Usando dispositivo: {device}")
+# Utilidad de preprocesamiento auxiliar (padding, resize, etc.)
+from ai_engine.utils.pre_processing import pad_and_resize
 
-# 1. Inicializar Detector y Embedder
-# MTCNN (Detector/Alineador) - se queda aquí para preparar la entrada
-mtcnn = MTCNN(image_size=160, margin=0, device=device)
+# Directorios de entrada y salida del dataset
+DATASET_ROOT = Path("run/dataset")
+OUTPUT_ROOT = Path("run/processed")
 
-# El Embedder ahora encapsula el modelo FaceNet y la Normalización L2
-embedder = FacenetPyTorchEmbedder()
+# Validación de existencia de la fuente de datos
+if not DATASET_ROOT.exists():
+    raise ValueError(f"El directorio {DATASET_ROOT} no existe.")
 
-embeddings_db = {}
+# Reinicialización del directorio de salida
+if OUTPUT_ROOT.exists():
+    shutil.rmtree(OUTPUT_ROOT)
+OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
 
-# Recorremos las imágenes del dataset
-for filename in os.listdir(dataset_dir):
-    if filename.endswith((".jpg", ".png")):
-        path = os.path.join(dataset_dir, filename)
-        # Extraer nombre (ejemplo: "messi-front.jpg" → "messi")
-        name = filename.split("-")[0] 
+# Selección automática de dispositivo
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        # Abrir imagen
-        img = Image.open(path)
+# Configuración del detector facial (MTCNN) — utilizado temporalmente como alineador
+# En un escenario completo, este componente debería ser reemplazado por la interfaz FaceAligner.
+mtcnn = MTCNN(image_size=160, device=device)
 
-        # 2. Detectar y Recortar cara (MTCNN)
-        # El resultado 'face_tensor' es un tensor de PyTorch alineado (3x160x160)
-        face_tensor = mtcnn(img) 
-        
-        if face_tensor is not None:
-            
-            # 3. Generar el Embedding (Delegado a la clase FacenetPyTorchEmbedder)
-            # El método embed retorna el array NumPy normalizado (1x512)
-            embedding_np = embedder.embed(face_tensor) 
-            
-            # 4. Guardar embedding en la base de datos
-            if name not in embeddings_db:
-                embeddings_db[name] = []
-                
-            embeddings_db[name].append(embedding_np) 
+# Instancia del embedder propio para el Escenario 3 (modelo ideal con pesos preentrenados)
+embedder = CustomFaceNetEmbedder(load_pretrained=True)
 
-# Imprimir resumen
-print(f"\nEmbeddings generados para {len(embeddings_db)} jugadores:", list(embeddings_db.keys()))
+# Procesamiento iterativo de personas dentro del dataset
+for person_dir in DATASET_ROOT.iterdir():
+    if not person_dir.is_dir():
+        continue
 
-# Guardar base de embeddings
-with open(db_path, "wb") as f:
-    pickle.dump(embeddings_db, f)
+    person_id = person_dir.name
+    images = sorted(person_dir.glob("*.pgm"))  # El dataset de prueba contiene imágenes .pgm
 
-print(f"Base de embeddings guardada en {db_path}")
+    if not images:
+        print(f"Sin imágenes para {person_id}")
+        continue
+
+    # En este prototipo se toma una sola imagen por persona
+    image_path = images[0]
+    image = Image.open(image_path)
+
+    # --- Pipeline temporal de detección y alineación ---
+    # En una versión modular, aquí se integraría FaceAligner.
+    # Actualmente, MTCNN cumple el rol de detectar y recortar el rostro.
+    face_tensor = mtcnn(image)
+
+    if face_tensor is None:
+        print(f"No se detectó rostro en la imagen de {person_id}")
+        continue
+
+    # Conversión del tensor alineado (3x160x160) al formato NumPy esperado (HWC)
+    # MTCNN devuelve tensores normalizados [0,1]; se revertirá la normalización
+    # para dejar que el embedder realice su propio escalado interno.
+    aligned_face_np = (face_tensor.permute(1, 2, 0).cpu().numpy() * 255).astype(np.uint8)
+
+    try:
+        # Generación del embedding facial (vector 1x512) utilizando el modelo propio
+        embedding = embedder.embed(aligned_face_np)
+    except Exception as e:
+        print(f"Error al generar embedding para {person_id}: {e}")
+        continue
+
+    # --- Persistencia de resultados ---
+    # Se genera un subdirectorio por persona dentro de la carpeta de salida
+    person_out = OUTPUT_ROOT / person_id
+    person_out.mkdir(parents=True, exist_ok=True)
+
+    # Guardar el embedding como archivo NumPy
+    np.save(person_out / "vec.npy", embedding)
+
+    # Guardar el rostro alineado en formato JPEG para verificación visual
+    Image.fromarray(aligned_face_np).save(person_out / "image1.jpg")
+
+    # Registro de metadatos básicos del procesamiento
+    meta = {
+        "source_image": str(image_path),
+        "embedding_model": "InceptionResnetV1 (Propio)",
+        "preprocessing": "MTCNN Alignment to 160x160",
+        "tag": "celebrity"
+    }
+    with open(person_out / "meta.json", "w") as f:
+        json.dump(meta, f, indent=2)
+
+    print(f"Procesado {person_id} con éxito, path: {image_path.name}")
+
