@@ -9,9 +9,8 @@ import torch
 # Importación de módulos propios del sistema
 # -------------------------------------------------------
 from ai_engine.implementations.custom_facenet_embedder import CustomFaceNetEmbedder
-from ai_engine.implementations.faceDetector import CustomFaceDetector
-from ai_engine.implementations.face_aligner import CustomFaceAligner
-
+from ai_engine.implementations.faceDetector import faceDetector 
+from ai_engine.implementations.face_aligner import FaceAligner 
 
 # -------------------------------------------------------
 # Configuración de rutas y entorno
@@ -36,8 +35,10 @@ print(f"✅ Ejecutando en dispositivo: {device}")
 # -------------------------------------------------------
 # Instanciación de módulos del pipeline
 # -------------------------------------------------------
-detector = CustomFaceDetector(device=device)       #  Detector facial
-aligner = CustomFaceAligner(output_size=160)       #  Alineador de rostros
+
+
+detector = faceDetector()                         #  Detector facial
+aligner = FaceAligner(output_size=160)            #  Alineador de rostros
 embedder = CustomFaceNetEmbedder(load_pretrained=True)  #  Generador de embeddings
 
 
@@ -58,6 +59,11 @@ for person_dir in DATASET_ROOT.iterdir():
     # Se procesa solo la primera imagen por persona (puede ampliarse fácilmente)
     image_path = images[0]
     image = Image.open(image_path).convert('RGB')
+
+
+
+	# CORRECCIÓN 3: Conversión de PIL a NumPy ANTES de llamar al Detector y Alineador
+    image_np = np.array(image_pil)
 
     # -------------------------------------------------------
     # ETAPA 1: Detección de rostro
