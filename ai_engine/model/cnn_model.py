@@ -9,36 +9,65 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torch.nn import TripletMarginLoss
 from tqdm import tqdm
+import torch.optim as optim
 
-class EmbeddingNet(nn.Module):
-    def __init__(self, embedding_dim=128):
+class ResidualBlock(nn.Module):
+    def __init__(self, in_ch, out_ch, stride=1):
         super().__init__()
-        self.features = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, padding=1),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
+        self.conv1 = nn.Conv2d(in_ch, out_ch, 3, stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_ch)
+        self.conv2 = nn.Conv2d(out_ch, out_ch, 3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_ch)
 
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
-
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.AdaptiveAvgPool2d((1, 1))
-        )
-        self.fc = nn.Linear(128, embedding_dim)
-        self.bn = nn.BatchNorm1d(embedding_dim, eps=1e-5, momentum=0.1)
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_ch != out_ch:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_ch, out_ch, 1, stride, bias=False),
+                nn.BatchNorm2d(out_ch)
+            )
 
     def forward(self, x):
-        x = self.features(x)
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        out += self.shortcut(x)
+        return F.relu(out)
+    
+class EmbeddingNet(nn.Module):
+    def __init__(self, embedding_dim=256):
+        super().__init__()
+        self.stem = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(3, stride=2, padding=1)
+        )
+
+        # Bloques residuales: [64, 128, 256]
+        self.layer1 = self._make_layer(64, 64, num_blocks=2, stride=1)
+        self.layer2 = self._make_layer(64, 128, num_blocks=2, stride=2)
+        self.layer3 = self._make_layer(128, 256, num_blocks=2, stride=2)
+
+        self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+        self.fc = nn.Linear(256, embedding_dim)
+        self.bn = nn.BatchNorm1d(embedding_dim, eps=1e-5, momentum=0.1)
+
+    def _make_layer(self, in_ch, out_ch, num_blocks, stride):
+        layers = []
+        layers.append(ResidualBlock(in_ch, out_ch, stride))
+        for _ in range(1, num_blocks):
+            layers.append(ResidualBlock(out_ch, out_ch))
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
         x = self.bn(x)
-        x = F.normalize(x, p=2, dim=1)
-        return x
+        return F.normalize(x, p=2, dim=1)
     
 class TripletFaceDataset(Dataset):
     """
@@ -124,8 +153,10 @@ def main():
     os.makedirs(root + "/checkpoints", exist_ok=True)
 
     transform = transforms.Compose([
-        transforms.Resize((128, 128)),
+        transforms.Resize((128,128)),
         transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(15),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
         transforms.ToTensor(),
         transforms.Normalize([0.5]*3, [0.5]*3)
     ])
@@ -133,20 +164,22 @@ def main():
     dataset = TripletFaceDataset(data_root, transform)
     dataloader = DataLoader(
         dataset,
-        batch_size=128,
+        batch_size=256,
         shuffle=True,
-        num_workers=8,
+        num_workers=12,
         pin_memory=True,
-        prefetch_factor=2,
+        prefetch_factor=4, 
         persistent_workers=True)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = EmbeddingNet(embedding_dim=128).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
+    model = EmbeddingNet(embedding_dim=256).to(device)
+    optimizer = optim.AdamW(model.parameters(), lr=1.4e-4, weight_decay=1e-5)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=30)
 
-    for epoch in range(1, 31):
+    for epoch in range(1, 21):
         loss = train(model, dataloader, optimizer, device)
         print(f"Epoch {epoch}/30 - Loss: {loss:.4f}")
+        scheduler.step()  # Actualiza el learning rate después de cada epoch
         torch.save(model.state_dict(), f"run/checkpoints/model_epoch_{epoch}.pt")
 
 if __name__ == "__main__":
