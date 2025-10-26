@@ -1,70 +1,62 @@
-
-import json
-from pathlib import Path
-import shutil
-from PIL import Image
-import numpy as np
-import torch
+import argparse
 from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
-from facenet_pytorch import MTCNN
-from torchvision import transforms
+from ai_engine.implementations.vectorizer.trained_vectorizer import FaceNetEmbedder
+from ai_engine.services.vectorizer_service import VectorizerService
 
-from ai_engine.utils.pre_processing import pad_and_resize
+def main():
+    parser = argparse.ArgumentParser(description="Vectoriza un dataset de imágenes usando un embedder.")
+    parser.add_argument(
+        "--embedder",
+        type=str,
+        choices=["custom", "facenet"],
+        default="custom",
+        help="Selecciona el embedder a usar (custom o facenet)"
+    )
+    parser.add_argument(
+        "--dim",
+        type=int,
+        default=256,
+        help="Dimensión del embedding"
+    )
+    parser.add_argument(
+        "--input-dir",
+        type=str,
+        default="run/dataset",
+        help="Directorio de entrada con las imágenes a procesar"
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="run/processed",
+        help="Directorio de salida donde se guardarán los embeddings"
+    )
+    parser.add_argument(
+        "--model-path",
+        type=str,
+        default=None,
+        help="Ruta al modelo entrenado (solo aplicable para Custom)."
+    )
 
-DATASET_ROOT = Path("run/dataset")
-OUTPUT_ROOT = Path("run/processed")
+    args = parser.parse_args()
 
-if not DATASET_ROOT.exists():
-    raise ValueError(f"El directorio {DATASET_ROOT} no existe.")
+    if args.embedder != "custom" and args.model_path is not None:
+        parser.error("--model-path solo puede usarse con --embedder custom")
 
-if OUTPUT_ROOT.exists():
-    shutil.rmtree(OUTPUT_ROOT)
+    # Selección del embedder
+    if args.embedder == "custom":
+        model_path = args.model_path or "run/checkpoints/model_epoch_20.pt"
+        vectorizer = FaceNetEmbedder(model_path, embedding_dim=args.dim)
+    else:
+        vectorizer = FacenetPyTorchEmbedder()
     
-OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+    service = VectorizerService(vectorizer)
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-mtcnn = MTCNN(image_size=160, device=device)
-embedder = FacenetPyTorchEmbedder()
+    print(f"Usando embedder: {args.embedder}")
+    if args.model_path:
+        print(f"Modelo cargado desde: {args.model_path}")
+    print(f"Vectorizando dataset desde {args.input_dir} hacia {args.output_dir}")
 
-# TODO: Tomar más de una imagen por persona para mejorar los resultados
-for person_dir in DATASET_ROOT.iterdir():
-    if not person_dir.is_dir():
-        continue
+    service.vectorize_dataset(args.input_dir, args.output_dir)
 
-    person_id = person_dir.name
-    images = sorted(person_dir.glob("*.pgm")) # en el dataset de prueba las imagenes son .pgm
-
-    if not images:
-        print(f"Sin imágenes para {person_id}")
-        continue
-
-    image_path = images[0]  # solo una por ahora
-    image = Image.open(image_path)
-    processed = pad_and_resize(image)
-    tensor = transforms.ToTensor()(processed)
-
-    try:
-        embedding = embedder.embed(tensor)  # (1, 512) Para Nico: ¿Es necesario que tome un tensor?
-    except Exception as e:
-        print(f"Error al generar embedding para {person_id}: {e}")
-        continue
-
-    person_out = OUTPUT_ROOT / person_id
-    person_out.mkdir(parents=True, exist_ok=True)
-
-    np.save(person_out / "vec.npy", embedding)
-
-    processed.save(person_out / "image1.jpg")
-
-    # Metadatos de prueba, realmente se guardaran datos como nombre, ¿Equipo? ¿Email?, dependiendo la aplicación,
-    # inicialmente solo el nombre para el funcionamiento principal.
-    meta = {
-        "source_image": str(image_path),
-        "embedding_model": "InceptionResnetV1",
-        "preprocessing": "pad_and_resize, de 92x112 a 160x160",
-        "tag": "celebrity"
-    }
-    with open(person_out / "meta.json", "w") as f:
-        json.dump(meta, f, indent=2)
-
-    print(f"Procesado {person_id} con éxito, path: {image_path.name}")
+if __name__ == "__main__":
+    main()
