@@ -3,6 +3,7 @@ from PIL import Image, ImageOps
 import numpy as np
 from torchvision import transforms
 from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
+from ai_engine.interfaces.face_embedder import FaceEmbedder
 
 """
 Ajusta las dimensiones de la imagen para que se adapte al modelo usado,
@@ -20,8 +21,12 @@ def pad_and_resize(image: Image.Image, target_size=(160, 160)) -> Image.Image:
     resized = padded.resize(target_size, Image.BILINEAR)
     return resized
 
-def get_embedding(image_path: Path, embedder: FacenetPyTorchEmbedder) -> np.ndarray:
+def get_embedding(image_path: Path, embedder: FaceEmbedder, target_size=(160,160)) -> np.ndarray:
     image = Image.open(image_path)
-    processed = pad_and_resize(image)
-    tensor = transforms.ToTensor()(processed)
+    processed = pad_and_resize(image, target_size)
+    preprocess = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize([0.5]*3, [0.5]*3)
+    ])
+    tensor = preprocess(processed)
     return embedder.embed(tensor)
