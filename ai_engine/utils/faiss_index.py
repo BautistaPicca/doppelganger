@@ -25,7 +25,7 @@ class FaissIndex:
         from_dir (Optional[str]): Ruta al directorio desde donde cargar un índice existente.
     """
     def __init__(self, dim: int = 512, from_dir: Optional[str] = None):
-        self.index = faiss.IndexIDMap(faiss.IndexFlatIP(dim))
+        self.index = faiss.IndexIDMap(faiss.IndexFlatL2(dim))
         self.name_lookup: Dict[int, str] = {}
         if from_dir:
             self._load(Path(from_dir))
