@@ -3,8 +3,12 @@ from pathlib import Path
 
 from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
 from ai_engine.implementations.faiss_matcher import FaissFaceMatcher
+from ai_engine.implementations.vectorizer.trained_vectorizer import FaceNetEmbedder
+from ai_engine.services.indexer_service import IndexerService
 from ai_engine.utils.faiss_index import FaissIndex
 from ai_engine.utils.pre_processing import get_embedding
+
+img_size = 128
 
 def show_results(query_image_path: Path, results):
     import tkinter as tk
@@ -32,7 +36,7 @@ def show_results(query_image_path: Path, results):
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
 
-    query_img = Image.open(query_image_path).resize((160, 160))
+    query_img = Image.open(query_image_path).resize((img_size, img_size))
     query_tk = ImageTk.PhotoImage(query_img)
     tk.Label(scrollable_frame, text="Imagen consultada", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=3, pady=10)
     tk.Label(scrollable_frame, image=query_tk).grid(row=1, column=0, columnspan=3, pady=10)
@@ -45,7 +49,7 @@ def show_results(query_image_path: Path, results):
         image_path = person_dir / "image1.jpg"
 
         try:
-            result_img = Image.open(image_path).resize((160, 160))
+            result_img = Image.open(image_path).resize((img_size, img_size))
             result_tk = ImageTk.PhotoImage(result_img)
 
             frame = tk.Frame(scrollable_frame)
@@ -68,14 +72,21 @@ def main():
     parser.add_argument("image", type=str, help="Ruta de la imagen a comparar")
     parser.add_argument("--k", type=int, default=5, help="Número de parecidos más cercanos")
     parser.add_argument("--ui", action="store_true", help="Mostrar interfaz gráfica")
+    parser.add_argument(
+        "--model-path",
+        type=str,
+        default=None,
+        help="Ruta al modelo entrenado (solo aplicable para Custom)."
+    )
 
     args = parser.parse_args()
 
-    embedder = FacenetPyTorchEmbedder()
-    index = FaissIndex(from_dir="run/index")
+    model_path = args.model_path or "run/checkpoints/model_epoch_20.pt"
+    embedder = FaceNetEmbedder(model_path, embedding_dim=256)
+    index = IndexerService(from_dir="run/index", dim=256)
     matcher = FaissFaceMatcher(index)
 
-    embedding = get_embedding(Path(args.image), embedder)
+    embedding = get_embedding(Path(args.image), embedder, target_size=(img_size, img_size))
     results = matcher.match(embedding, k=args.k)
     
     if args.ui:
