@@ -21,14 +21,10 @@ class FaissFaceMatcher(FaceMatcher):
         self.index = index  # instancia de FaissIndex ya construida
     
     def match(self, embedding: np.ndarray, k: int = 5) -> List[MatchResult]:
-        distances, ids = self.index.search(embedding, k)
-
         results = []
-        for idx, score in zip(ids, distances):
-            name = self.index.name_lookup[int(idx)]
-            similarity = round(score * 100, 2)
+        for name, similarity in self.index.search(embedding, k):
             image_base64 = encode_image(f"run/processed/{name}/image1.jpg")
-            results.append(MatchResult(index=idx, name=name, similarity=similarity, image=f"data:image/jpeg;base64,{image_base64}"))
+            results.append(MatchResult(index=0, name=name, similarity=similarity, image=f"data:image/jpeg;base64,{image_base64}"))
 
         results.sort(key=lambda r: r.similarity, reverse=True)
         return results
