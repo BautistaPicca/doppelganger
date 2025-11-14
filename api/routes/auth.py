@@ -6,23 +6,9 @@ from functools import wraps
 from PIL import Image
 
 from ai_engine.utils.pre_processing import pad_and_resize
+from api.config import auth_service
 
 auth_bp = Blueprint("api/auth", __name__)
-auth_service = None
-
-@auth_bp.record_once
-def on_load(state):
-    """Inicializa el servicio de autenticación al cargar el blueprint"""
-    global auth_service
-    from api.services.auth_service import FaceAuthService
-    
-    auth_service = FaceAuthService(
-        upload_dir=state.app.config["UPLOAD_FOLDER"],
-        index_dir=state.app.config.get("FACE_INDEX_DIR", "run/server/face_index"),
-        threshold=state.app.config.get("FACE_THRESHOLD", 0.65)
-    )
-    
-    print(f"FaceAuthService inicializado: {auth_service.get_stats()}")
 
 def token_required(f):
     @wraps(f)

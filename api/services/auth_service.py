@@ -8,6 +8,8 @@ from PIL import Image
 from torchvision import transforms
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from api.config import CONFIGS
+
 @dataclass
 class AuthUser:
     """
@@ -45,33 +47,56 @@ class FaceAuthService:
     - Detección de duplicados al registrar nuevos usuarios
     - Validaciones básicas de seguridad
     """
-    def __init__(self, upload_dir, index_dir: str = "run/server/face_index", threshold=0.65):
+    def __init__(self, upload_dir, index_dir: str = "run/server/face_index", config_name="pretrained"):
         """
         Inicializa el servicio de autenticación facial.
         
         Args:
             upload_dir: Directorio para guardar imágenes de rostros
             index_dir: Directorio para guardar el índice FAISS
-            threshold: Umbral de similitud para login (0.65)
         """
-        from ai_engine.services.vectorizer_service import VectorizerService
-        from ai_engine.services.user_indexer_service import CompositeIndexerService
-        from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
 
-        self.vectorizer = VectorizerService(FacenetPyTorchEmbedder())
         self.upload_dir = upload_dir
         self.index_dir = Path(index_dir)
-        self.threshold = threshold
 
         # Crea los directorios si no existen
         os.makedirs(self.upload_dir, exist_ok=True)
         self.index_dir.mkdir(parents=True, exist_ok=True)
-        
-        # [TODO] Cargar indice existente
-        print(f"Creando nuevo índice de usuarios")
-        self.indexer = CompositeIndexerService(dim=512, data_class=AuthUser)
 
-        self.DUPLICATE_THRESHOLD = 0.7
+        self.apply_config(config_name)
+
+    def apply_config(self, config_name: str):
+        """
+        Cambia dinámicamente el vectorizador y el índice según la configuración seleccionada.
+        
+        Cuando se aplica una nueva configuración, se reinicia la base de datos de usuarios, por lo que
+        debe tenerse en cuenta.
+        """
+        if config_name not in CONFIGS:
+            raise ValueError(f"Configuración desconocida: {config_name}")
+
+        cfg = CONFIGS[config_name]
+
+        print(f"Cargando configuración: {config_name}")
+
+        # Vectorizador
+        embedder_class = cfg["embedder"]
+        embedder = embedder_class()
+
+        from ai_engine.services.vectorizer_service import VectorizerService
+        self.vectorizer = VectorizerService(embedder)
+
+        # Parámetros
+        self.threshold = cfg["threshold"]
+        self.DUPLICATE_THRESHOLD = cfg["duplicate_threshold"]
+        self.dim = cfg["dim"]
+
+        # Reiniciar / recargar index
+        print("Reiniciando índice FAISS con dimensión:", self.dim)
+        from ai_engine.services.user_indexer_service import CompositeIndexerService
+        self.indexer = CompositeIndexerService(dim=self.dim, data_class=AuthUser)
+
+        self.current_config = config_name
 
     def _save(self):
         """Guarda el índice FAISS en disco"""
