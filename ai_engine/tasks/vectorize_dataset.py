@@ -1,9 +1,13 @@
 import argparse
-from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
+from ai_engine.implementations.vectorizer.facenet_pytorch_embedder import FacenetPyTorchEmbedder
 from ai_engine.implementations.vectorizer.trained_vectorizer import FaceNetEmbedder
 from ai_engine.services.vectorizer_service import VectorizerService
 
 def main():
+    """
+    Script para vectorizar un dataset de imágenes usando un embedder seleccionado.
+    El resultado se guarda en el directorio de salida especificado, creando un archivo .npy por cada imagen
+    """
     parser = argparse.ArgumentParser(description="Vectoriza un dataset de imágenes usando un embedder.")
     parser.add_argument(
         "--embedder",

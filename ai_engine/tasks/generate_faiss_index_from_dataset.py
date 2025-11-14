@@ -3,11 +3,16 @@ from pathlib import Path
 
 import numpy as np
 
-from ai_engine.services.indexer_service import IndexerService
+from ai_engine.services.simple_indexer_service import IndexerService
 from ai_engine.types import FaceRecord
 
 
 def main():
+    """
+    Script para crear un índice FAISS a partir de vectores procesados.
+    1. Carga vectores desde un directorio de entrada (por lo general un dataset procesado)
+    2. Crea un índice FAISS, añade los vectores y guarda el índice en disco
+    """
     parser = argparse.ArgumentParser(description="Crea un índice FAISS a partir de vectores procesados.")
 
     parser.add_argument(

@@ -1,11 +1,10 @@
 import argparse
 from pathlib import Path
 
-from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
-from ai_engine.implementations.faiss_matcher import FaissFaceMatcher
+from ai_engine.implementations.vectorizer.facenet_pytorch_embedder import FacenetPyTorchEmbedder
+from ai_engine.implementations.matcher.faiss_matcher import FaissFaceMatcher
 from ai_engine.implementations.vectorizer.trained_vectorizer import FaceNetEmbedder
-from ai_engine.services.indexer_service import IndexerService
-from ai_engine.utils.faiss_index import FaissIndex
+from ai_engine.services.simple_indexer_service import IndexerService
 from ai_engine.utils.pre_processing import get_embedding
 
 img_size = 128
@@ -68,6 +67,12 @@ def show_results(query_image_path: Path, results):
 
 
 def main():
+    """
+    Script para comparar una imagen y obtener los k rostros más similares en el índice FAISS;
+    Se puede ejecutar con o sin interfaz gráfica.
+
+    Sólo se utilizó para pruebas iniciales.
+    """
     parser = argparse.ArgumentParser(description="Face matcher")
     parser.add_argument("image", type=str, help="Ruta de la imagen a comparar")
     parser.add_argument("--k", type=int, default=5, help="Número de parecidos más cercanos")

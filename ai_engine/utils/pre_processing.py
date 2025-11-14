@@ -2,7 +2,6 @@ from pathlib import Path
 from PIL import Image, ImageOps
 import numpy as np
 from torchvision import transforms
-from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
 from ai_engine.interfaces.face_embedder import FaceEmbedder
 
 """

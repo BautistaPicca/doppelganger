@@ -9,6 +9,11 @@ from ai_engine.utils.pre_processing import pad_and_resize
 
 
 class VectorizerService:
+    """
+    Wrapper que envuelve un FaceEmbedder para vectorizar imágenes,
+    Se encarga de aplicar un pre-procesamiento básico antes de pasar la imagen al embedder y
+    convertir la imagen a tensor.
+    """
     def __init__(self, vectorizer: FaceEmbedder):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.vectorizer = vectorizer
@@ -19,7 +24,12 @@ class VectorizerService:
         embedding = self.vectorizer.embed(tensor)
         return embedding
 
+    # Sólo se utiliza para procesar el dataset "recreativo" de famosos
     def vectorize_dataset(self, dataset_dir: str, output_dir: str):
+        """"
+        Vectoriza un dataset de imágenes organizado en subdirectorios por persona,
+        guardando los embeddings y metadatos en el directorio de salida.
+        """
         DATASET_ROOT = Path(dataset_dir)
         OUTPUT_ROOT = Path(output_dir)
         

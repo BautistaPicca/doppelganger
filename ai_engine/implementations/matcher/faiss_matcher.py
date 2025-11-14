@@ -2,8 +2,8 @@ import numpy as np
 from typing import List
 
 from ai_engine.interfaces.face_matcher import FaceMatcher
+from ai_engine.services.simple_indexer_service import IndexerService
 from ai_engine.types import MatchResult
-from ai_engine.utils.faiss_index import FaissIndex
 
 import base64
 
@@ -14,7 +14,7 @@ def encode_image(path: str) -> str:
 
 
 class FaissFaceMatcher(FaceMatcher):
-    def __init__(self, index: FaissIndex, metric: str = "cosine"):
+    def __init__(self, index: IndexerService, metric: str = "cosine"):
         if metric != "cosine":
             raise ValueError("Solo se soporta la métrica 'cosine'")
         self.metric = metric
