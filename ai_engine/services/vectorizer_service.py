@@ -15,7 +15,8 @@ class VectorizerService:
 
     def vectorize(self, image: Image.Image):
         processed = pad_and_resize(image)
-        embedding = self.vectorizer.embed(processed)
+        tensor = transforms.ToTensor()(processed)
+        embedding = self.vectorizer.embed(tensor)
         return embedding
 
     def vectorize_dataset(self, dataset_dir: str, output_dir: str):
@@ -60,7 +61,7 @@ class VectorizerService:
             # inicialmente solo el nombre para el funcionamiento principal.
             meta = {
                 "source_image": str(image_path),
-                "embedding_model": "InceptionResnetV1",
+                "embedding_model": "model",
                 "preprocessing": "pad_and_resize, de 92x112 a 160x160",
                 "tag": "celebrity"
             }
