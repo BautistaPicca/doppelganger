@@ -8,9 +8,10 @@ import { PhotoUpload } from "./components/image_uploader";
 import { ResultsDisplay } from "./components/results_display";
 
 interface MatchResult {
-  name: string;
-  similarity: number;
+  celebrity: string;
+  confidence: number;
   image: string;
+  description: string;
 }
 
 async function sendImageToBackend(file: File): Promise<MatchResult[]> {
@@ -56,6 +57,20 @@ export default function MatchPage() {
     setShowResults(true);
 
     const results = await sendImageToBackend(selectedPhoto);
+   for (const result of results) {
+    const name = result.celebrity;
+    try {
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`;
+      const res = await fetch(url, {
+        headers: { "User-Agent": "FaceMatcherApp/1.0" }
+      });
+      const data = await res.json();
+      result.image = data.thumbnail?.source;
+      result.description = data.description;
+    } catch (err) {
+      console.error(err);
+    }
+  }
     setMatches(results);
     setIsAnalyzing(false);
   };

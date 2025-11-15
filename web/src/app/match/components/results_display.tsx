@@ -5,10 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, Trophy, Star } from "lucide-react";
 
 interface Match {
-  id: string;
-  name: string;
-  similarity: number;
-  category: string;
+  celebrity: string;
+  confidence: number;
   image: string;
   description: string;
 }
@@ -169,7 +167,7 @@ export const ResultsDisplay = ({ matches, userPhoto, isLoading }: ResultsDisplay
                   <div className="aspect-square rounded-lg overflow-hidden">
                     <img
                       src={topMatch.image}
-                      alt={topMatch.name}
+                      alt={topMatch.celebrity}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -179,10 +177,10 @@ export const ResultsDisplay = ({ matches, userPhoto, isLoading }: ResultsDisplay
                   </Badge>
                 </div>
                 <div className="text-center space-y-2">
-                  <h3 className="text-xl font-bold">{topMatch.name}</h3>
+                  <h3 className="text-xl font-bold">{topMatch.celebrity}</h3>
                   <p className="text-sm text-muted-foreground">{topMatch.description}</p>
                   <div className="flex items-center justify-center gap-2">
-                    <div className="text-2xl font-bold text-primary">{topMatch.similarity.toFixed(2)}%</div>
+                    <div className="text-2xl font-bold text-primary">{(topMatch.confidence*100).toFixed(2)}%</div>
                     <span className="text-sm text-muted-foreground">similitud</span>
                   </div>
                 </div>
@@ -210,7 +208,7 @@ export const ResultsDisplay = ({ matches, userPhoto, isLoading }: ResultsDisplay
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {otherMatches.map((match, index) => (
               <motion.div
-                key={match.name}
+                key={match.celebrity}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 + index * 0.1, duration: 0.3 }}
@@ -223,14 +221,14 @@ export const ResultsDisplay = ({ matches, userPhoto, isLoading }: ResultsDisplay
                       <div className="aspect-square rounded-lg overflow-hidden">
                         <img
                           src={match.image}
-                          alt={match.name}
+                          alt={match.celebrity}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="text-center space-y-1">
-                        <h4 className="text-sm font-semibold truncate">{match.name}</h4>
+                        <h4 className="text-sm font-semibold truncate">{match.celebrity}</h4>
                         <div className="flex items-center justify-center gap-1">
-                          <span className="text-lg font-bold text-primary">{match.similarity.toFixed(2)}%</span>
+                          <span className="text-lg font-bold text-primary">{(match.confidence*100).toFixed(2)}%</span>
                         </div>
                       </div>
                     </div>
