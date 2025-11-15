@@ -1,3 +1,4 @@
+from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -65,7 +66,7 @@ class ClassifierTrainer:
 
         return total_loss / len(loader), 100 * correct / total
 
-    def train(self, train_loader, val_loader, epochs=20):
+    def train(self, train_loader, val_loader, output_path, epochs=20):
         """
         Entrena el modelo varias veces (epochs) y guarda el mejor según la exactitud de validación.
         
@@ -93,6 +94,6 @@ class ClassifierTrainer:
                 torch.save({
                     "model": self.model.state_dict(),
                     "acc": val_acc # accuracy, basicamente la exactitud
-                }, "best_model.pth")
+                }, Path(output_path) / "best_model.pth")
 
                 print("Se guardó el mejor modelo.")
