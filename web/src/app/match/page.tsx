@@ -18,7 +18,7 @@ async function sendImageToBackend(file: File): Promise<MatchResult[]> {
   const formData = new FormData();
   formData.append("image", file);
 
-  const response = await fetch("http://localhost:5000/embed/", {
+  const response = await fetch("http://localhost:5000/api/match/", {
     method: "POST",
     body: formData,
   });

@@ -22,10 +22,10 @@ def create_app():
         config_name="pretrained"
     )
     
-    from api.routes.embeddings import embeddings_bp
+    from api.routes.match import match_bp
     from api.routes.auth import auth_bp
     from api.routes.config import config_bp
-    app.register_blueprint(embeddings_bp, url_prefix="/embed")
+    app.register_blueprint(match_bp, url_prefix="/api/match")
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(config_bp, url_prefix="/api")
     
