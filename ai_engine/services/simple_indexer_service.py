@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple
 import faiss
 import numpy as np
 
-from ai_engine.services.faiss_index import BaseFaissIndexer
+from ai_engine.services.base_faiss_index import BaseFaissIndexer
 
 @dataclass
 class SimpleRecord:

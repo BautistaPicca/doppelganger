@@ -1,9 +1,9 @@
 from PIL import Image
 from torchvision import transforms
 
-from ai_engine.implementations.facenet_pytorch_embedder import FacenetPyTorchEmbedder
-from ai_engine.implementations.faiss_matcher import FaissFaceMatcher
-from ai_engine.utils.faiss_index import FaissIndex
+from ai_engine.implementations.vectorizer.facenet_pytorch_embedder import FacenetPyTorchEmbedder
+from ai_engine.implementations.matcher.faiss_matcher import FaissFaceMatcher
+from ai_engine.services.simple_indexer_service import IndexerService
 from ai_engine.utils.pre_processing import pad_and_resize
 """
 Servicio para realizar la comparación de imagenes utilizando el matcher.
@@ -17,7 +17,8 @@ class MatcherService:
     """
     def __init__(self, index_dir="index"):
         self.embedder = FacenetPyTorchEmbedder()
-        self.index = FaissIndex(from_dir=index_dir)
+        #self.index = IndexerService(from_dir=index_dir)
+        self.index = IndexerService()
         self.matcher = FaissFaceMatcher(self.index)
     
     """

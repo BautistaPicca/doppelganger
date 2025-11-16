@@ -6,7 +6,7 @@ from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 
 import faiss
 import numpy as np
-from ai_engine.services.faiss_index import BaseFaissIndexer
+from ai_engine.services.base_faiss_index import BaseFaissIndexer
 
 T = TypeVar('T')
 

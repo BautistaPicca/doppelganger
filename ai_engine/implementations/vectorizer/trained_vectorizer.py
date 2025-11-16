@@ -6,14 +6,14 @@ from facenet_pytorch import MTCNN, InceptionResnetV1
 from typing import Optional
 
 from ai_engine.interfaces.face_embedder import FaceEmbedder
-from ai_engine.model.cnn_model import EmbeddingNet
+from ai_engine.model.cnn_model import GoogLeNet
 
 class FaceNetEmbedder(FaceEmbedder):
-    def __init__(self, model_path: str, embedding_dim: int = 128):
+    def __init__(self, model_path: str = "run/checkpoints/best_model.pth"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.face_detector = MTCNN(margin=20, select_largest=True)
         
-        self.face_vectorizer = EmbeddingNet(embedding_dim=embedding_dim).to(self.device)
+        self.face_vectorizer = GoogLeNet().to(self.device)
         state_dict = torch.load(model_path, map_location=self.device)
         self.face_vectorizer.load_state_dict(state_dict)
         self.face_vectorizer.eval()

@@ -1,4 +1,5 @@
 from ai_engine.implementations.vectorizer.facenet_pytorch_embedder import FacenetPyTorchEmbedder
+from ai_engine.implementations.vectorizer.trained_vectorizer import FaceNetEmbedder
 
 auth_service = None
 
@@ -12,8 +13,8 @@ CONFIGS = {
     },
     "trained": {
         "name": "Entrenado Propio",
-        "embedder": FacenetPyTorchEmbedder,
-        "dim": 256,
+        "embedder": FaceNetEmbedder,
+        "dim": 128,
         "threshold": 0.60,
         "duplicate_threshold": 0.68
     },
