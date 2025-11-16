@@ -1,5 +1,6 @@
 import torch.nn as nn
 from torchvision import models
+from torchvision.models import ResNet50_Weights
 
 class CelebrityClassifier(nn.Module):
     """
@@ -9,7 +10,7 @@ class CelebrityClassifier(nn.Module):
     características de las imágenes y luego aplica una capa totalmente conectada 
     para predecir la clase de la celebridad correspondiente.
     """
-    def __init__(self, num_classes, pretrained=True):
+    def __init__(self, num_classes):
         """
         num_classes: número de celebridades a clasificar
         pretrained: si usar pesos preentrenados en ImageNet
@@ -17,7 +18,7 @@ class CelebrityClassifier(nn.Module):
         super().__init__()
         
         # Usamos un ResNet50 preentrenado
-        self.backbone = models.resnet50(pretrained=pretrained)
+        self.backbone = models.resnet50(weights=ResNet50_Weights.DEFAULT)
         
         # Reemplazamos la última capa por nuestro clasificador, ajustando el número de clases a la cantidad de celebridades
         # De esta forma aprovechamos el modelo preentrenado y solo entrenamos la última capa, permitiendo mejores resultados

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, Dispatch, SetStateAction } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 interface ConfigMenuContextType {
   open: boolean;
@@ -19,7 +20,8 @@ export const useConfigMenu = () => {
 
 export const ConfigMenuProvider = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false);
-
+  const pathname = usePathname();
+  const match = pathname.endsWith("match");
   const chooseConfig = async (mode: string) => {
     await fetch("http://localhost:5000/api/config", {
       method: "POST",
@@ -56,7 +58,7 @@ export const ConfigMenuProvider = ({ children }: { children: React.ReactNode }) 
               exit={{ x: 300 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-xl font-bold mb-6">Configuración del Sistema</h2>
+              {!match && <><h2 className="text-xl font-bold mb-6">Configuración del Sistema</h2>
 
               <button
                 onClick={() => chooseConfig("pretrained")}
@@ -81,7 +83,7 @@ export const ConfigMenuProvider = ({ children }: { children: React.ReactNode }) 
 
               <div className="mt-auto text-center text-sm text-gray-500">
                 Selecciona una configuración.
-              </div>
+              </div></>}
             </motion.div>
           </motion.div>
         )}
