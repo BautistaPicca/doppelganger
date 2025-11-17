@@ -1,15 +1,12 @@
-from PIL import Image
 import torch
 from torch import no_grad
 import numpy as np
-from facenet_pytorch import MTCNN, InceptionResnetV1
+from facenet_pytorch import MTCNN
 from typing import Optional
 
 from ai_engine.interfaces.face_embedder import FaceEmbedder
-from ai_engine.model.cnn_model import GoogLeNet
 from ai_engine.model.vectorizer.model import FaceEmbeddingNet
 import torch.nn.functional as F
-from torchvision import transforms
 
 class FaceNetEmbedder(FaceEmbedder):
     def __init__(self, model_path: str = "run/models/backbone_vectorizer.pth"):
