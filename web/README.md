@@ -3,6 +3,15 @@
 Aplicación web que interactúa con la API de reconocimiento facial para registro, login y búsqueda de rostros similares.
 
 ---
+## Como usar
+Instalar dependencias:
+```bash
+  npm i
+```
+Iniciar el servidor en modo desarrollo:
+```bash
+  npm run dev
+```
 
 ## Características principales
 

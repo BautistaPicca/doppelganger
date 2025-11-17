@@ -4,7 +4,20 @@ API de la aplicación para la comunicación entre cliente y servidor.
 La autenticación mediante rostro se implementa usando **JSON Web Tokens (JWT)**.
 
 ---
-
+## Como usar
+Pasos previos:
+ - Activar el ambiente venv
+ ```bash
+  .\venv\Scripts\activate
+ ```
+ - Instalar dependencias
+ ```bash
+  pip install -r requeriments.txt
+ ```
+Para iniciar el servidor:
+```bash
+  python -m api.app
+```
 ## Rutas disponibles
 
 - **`/api/auth/login`**  
