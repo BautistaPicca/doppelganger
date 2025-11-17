@@ -1,8 +1,3 @@
-<<<<<<< Updated upstream
-# face-matcher
-
-Descripción de la maqueta que se encuentra en el repositorio: Maqueta base que hicimos como primer paso, utilizando Google Colab, con framework TensorFlow y modelo preentrenado MobileNetV2. Al querer obtener más mejoras, como aumentar los entrenamientos y por una cuestión de velocidad al entrenar,  decidimos migrar al framework Pytorch para que pueda utilizar la GPU que tenemos y entrenar más rápido. Esto se encuentra dentro de ai_engine.
-=======
 # Tesina Proyecto 2025 – UNRC (Río Cuarto)
 Este proyecto forma parte de la tesina 2025 de la materia "Proyecto" para la Universidad Nacional de Río Cuarto.  
 La idea principal es desarrollar una aplicación recreativa donde el usuario pueda subir una foto y ver **a qué celebridad se parece**.
@@ -19,6 +14,9 @@ El sistema está compuesto por dos partes:
 - **Inferencia**: donde se carga el modelo entrenado y se usa para procesar fotos de usuarios.
 
 En la etapa de inferencia, el modelo devuelve por probabilidad a qué clase pertenece la imagen ingresada, por cada persona del dataset hay una clase.
+
+Nota:
+Descripción de la maqueta que se encuentra en el repositorio: Maqueta base que hicimos como primer paso, utilizando Google Colab, con framework TensorFlow y modelo preentrenado MobileNetV2. Al querer obtener más mejoras, como aumentar los entrenamientos y por una cuestión de velocidad al entrenar,  decidimos migrar al framework Pytorch para que pueda utilizar la GPU que tenemos y entrenar más rápido. Esto se encuentra dentro de ai_engine.
 
 ---
 
@@ -111,4 +109,3 @@ Incluye:
 
 Sin embargo, es importante aclarar que el modelo entrenado por nuestra cuenta no ofrece resultados válidos.
 Se mantiene solo para documentar el proceso.
->>>>>>> Stashed changes
