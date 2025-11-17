@@ -1,7 +1,7 @@
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from pathlib import Path
-from config import DATA_DIR, IMG_SIZE, BATCH_SIZE
+from ai_engine.config import DATA_DIR, IMG_SIZE, BATCH_SIZE
 
 def get_dataloaders():
     # Transformaciones para las imágenes de entrenamiento:
