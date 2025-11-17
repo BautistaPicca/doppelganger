@@ -24,7 +24,7 @@ def create_app():
         index_dir=app.config["FACE_INDEX_DIR"],
         config_name="pretrained"
     )
-    
+    # Registro las rutas de la API
     from api.routes.match import match_bp
     from api.routes.auth import auth_bp
     from api.routes.config import config_bp
@@ -33,5 +33,5 @@ def create_app():
     app.register_blueprint(config_bp, url_prefix="/api")
     
     return app
-
+# Instancia final de la app
 app = create_app()
