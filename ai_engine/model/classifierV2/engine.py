@@ -25,7 +25,7 @@ def training_for_each_epoch(model, loader, optimizer, device, criterion):
     return running_loss / total, correct / total
     
     
-   def eval_for_each_epoch(model, loader, device, criterion):
+def eval_for_each_epoch(model, loader, device, criterion):
     # Configuramos el modelo en modo evaluación
     model.eval()
     running_loss, correct, total = 0, 0, 0
@@ -44,3 +44,4 @@ def training_for_each_epoch(model, loader, optimizer, device, criterion):
 
     # Retornamos métricas finales
     return running_loss / total, correct / total
+
