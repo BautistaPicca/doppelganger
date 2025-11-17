@@ -3,8 +3,7 @@ from ai_engine.model.load_Model import load_model
 from ai_engine.utils.classes import load_class_names
 from ai_engine.model.classifierV2.predict import predict_celebrity
 
-
-from ai_engine.utils import MODEL_PATH, DATA_DIR, IMG_SIZE
+from ai_engine.config import MODEL_PATH, DATA_DIR, IMG_SIZE
 
 TEST_IMAGE = r"ruta de ejemplo"
 

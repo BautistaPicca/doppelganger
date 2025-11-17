@@ -1,8 +1,10 @@
 import torch
 import cv2
 from torchvision import transforms
-from detector import detect_and_crop_face
+from ai_engine.implementations.detector.face_detector import detect_and_crop_face
 
+
+#Metodo para realizar la prediccion
 def predict_celebrity(model, class_names, image_path, device, img_size):
 
     face = detect_and_crop_face(image_path)
