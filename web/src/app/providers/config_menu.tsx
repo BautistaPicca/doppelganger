@@ -68,13 +68,6 @@ export const ConfigMenuProvider = ({ children }: { children: React.ReactNode }) 
               </button>
 
               <button
-                onClick={() => chooseConfig("trained")}
-                className="p-3 mb-3 rounded-lg border hover:bg-gray-100"
-              >
-                Entrenado
-              </button>
-
-              <button
                 onClick={() => chooseConfig("backbone_trained")}
                 className="p-3 mb-3 rounded-lg border hover:bg-gray-100"
               >
