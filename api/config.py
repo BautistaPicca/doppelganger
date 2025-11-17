@@ -11,17 +11,10 @@ CONFIGS = {
         "threshold": 0.65,
         "duplicate_threshold": 0.7
     },
-    "trained": {
-        "name": "Entrenado Propio",
-        "embedder": FaceNetEmbedder,
-        "dim": 128,
-        "threshold": 0.60,
-        "duplicate_threshold": 0.68
-    },
     "backbone_trained": {
         "name": "Backbone + Entrenado",
         "embedder": FaceNetEmbedder,
-        "dim": 512,
+        "dim": 128,
         "threshold": 0.7,
         "duplicate_threshold": 0.7
     }
