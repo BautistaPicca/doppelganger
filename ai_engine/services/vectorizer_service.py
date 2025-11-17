@@ -20,8 +20,16 @@ class VectorizerService:
 
     def vectorize(self, image: Image.Image):
         processed = pad_and_resize(image)
-        tensor = transforms.ToTensor()(processed)
-        embedding = self.vectorizer.embed(tensor)
+        
+        face_transform = transforms.Compose([
+            transforms.Resize((160, 160)),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.5, 0.5, 0.5],
+                std=[0.5, 0.5, 0.5]
+            )
+        ])
+        embedding = self.vectorizer.embed(face_transform(processed))
         return embedding
 
     # Sólo se utiliza para procesar el dataset "recreativo" de famosos

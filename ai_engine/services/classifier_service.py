@@ -3,8 +3,8 @@ from torchvision import transforms
 from PIL import Image
 import json
 
-from ai_engine.model.classifier.model import CelebrityClassifier
-
+from ai_engine.implementations.detector.face_detector import ImageFaceProcessor
+from ai_engine.model.classifierV2.load_Model import load_model
 
 class ClassifierService:
     """
@@ -27,13 +27,7 @@ class ClassifierService:
         with open(mapping_path, "r") as f:
             self.idx_to_celebrity = json.load(f)
 
-        num_classes = len(self.idx_to_celebrity)
-
-        # Se carga el modelo
-        self.model = CelebrityClassifier(num_classes)
-        self.model.load_state_dict(torch.load(model_path, map_location=device)["model"])
-        self.model.to(device)
-        self.model.eval()
+        self.model = load_model(model_path, len(self.idx_to_celebrity), device)
 
         # Transformaciones para las imágenes de entrada, estaría bien mover esto a utils, si alguno va a hacerlo
         # tambien se está usando en CelebrityClassifier
@@ -57,8 +51,9 @@ class ClassifierService:
                 - "celebrity": Nombre de la celebridad
                 - "confidence": Nivel de confianza de la predicción
         """
-        img_rgb = image.convert("RGB")
-        img_tensor = self.transform(img_rgb).unsqueeze(0).to(self.device)
+        face = ImageFaceProcessor.process(image)
+
+        img_tensor = self.transform(Image.fromarray(face)).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
             outputs = self.model(img_tensor)

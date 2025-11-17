@@ -6,7 +6,7 @@ import { Star, Trophy } from "lucide-react";
 
 const categories = [
   { id: "all", label: "Todos los famosos", icon: Star },
-  { id: "soccer", label: "Fútbolistas", icon: Trophy },
+  { id: "soccer", label: "Fútbolistas", icon: Trophy, disabled: true },
 ];
 
 interface CategoryFilterProps {
@@ -27,7 +27,7 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {categories.map((category, index) => {
             const Icon = category.icon;
-            const isSelected = selectedCategory === category.id;
+            const isSelected = !category.disabled && selectedCategory === category.id;
             
             return (
               <motion.div
@@ -39,6 +39,7 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
                 <Button
                   variant={isSelected ? "default" : "outline"}
                   size="lg"
+                  disabled={category.disabled}
                   className={`h-20 w-full flex-col gap-2 text-xs transition-all duration-200`}
                   onClick={() => onCategoryChange(category.id)}
                 >
