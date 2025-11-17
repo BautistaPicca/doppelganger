@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tesina Proyecto 2025 – Frontend
 
-## Getting Started
+Aplicación web que interactúa con la API de reconocimiento facial para registro, login y búsqueda de rostros similares.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Características principales
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Rutas y funcionalidades
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **`/login` / `/register`**
+  - Permite al usuario registrarse o iniciar sesión utilizando **reconocimiento facial** y datos tradicionales en el caso del registro (nombre, email, contraseña).  
+  - Las imágenes se envían al backend para generar embeddings y validar coincidencias.  
+  - La sesión se mantiene mediante **JWT**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **`/match`**
+  - Permite subir una imagen y recibir los K rostros más parecidos del sistema.  
+  - Se muestra nombre, profesión y nivel de confianza de la coincidencia.  
 
-## Learn More
+- **Datos de famosos**
+  - Las fotos y descripciones de celebridades se obtienen automáticamente desde **Wikipedia**.  
+  - Se incluye una breve descripción de la profesión de cada famoso.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tecnologías y librerías
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **UI**
+  - [ShadCN/UI](https://ui.shadcn.com/) para componentes de interfaz modernos y consistentes.  
+  - [Framer Motion](https://www.framer.com/motion/) para animaciones responsivas en los componentes.
 
-## Deploy on Vercel
+- **Autenticación**
+  - Uso de **JWT** para mantener la sesión de usuario y asegurar la comunicación con la API.  
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Flujo de usuario
+
+1. **Registro/Login**
+   - Usuario se registra o inicia sesión enviando datos y/o imagen facial.  
+   - El backend valida la imagen y devuelve un token JWT si la autenticación es exitosa.
+
+2. **Búsqueda de parecidos**
+   - Usuario sube una foto en la ruta `/match`.  
+   - La app envía la imagen al backend y recibe los K parecidos más relevantes.  
+   - Se muestran resultados con foto, nombre y descripción de profesión.
+
+3. **Gestión de sesión**
+   - El JWT se almacena localmente y se utiliza para mantener la sesión activa.  
+   - Los usuarios pueden cerrar sesión de forma segura, eliminando el token.
+
+---

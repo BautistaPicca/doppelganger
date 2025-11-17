@@ -104,8 +104,9 @@ En ese caso sí es útil entrenar un modelo adaptado al contexto de iluminación
 Decidimos conservar todo el código relacionado al vectorizador dentro del proyecto.
 Incluye:
 - Ejemplo de cómo debería funcionar usando un modelo pre-entrenado real
-- Opción para seleccionar el último modelo que entrenamos nosotros
+- Opción para seleccionar un modelo con backbone + una capa de entrenamiento con dataset custom
 - Código estructurado para permitir inferencia, embedding y búsquedas
 
-Sin embargo, es importante aclarar que el modelo entrenado por nuestra cuenta no ofrece resultados válidos.
-Se mantiene solo para documentar el proceso.
+Estuvimos mucho tiempo intentando entrenar un modelo desde 0 por nuestra cuenta, no mantuvimos el código de esos intentos con el fin de mantener el repositorio limpio.
+
+Es importante aclarar que el modelo entrenado por nuestra cuenta no ofrece resultados ni cerca de ser válidos.
