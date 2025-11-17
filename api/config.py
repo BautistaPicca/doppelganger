@@ -20,9 +20,9 @@ CONFIGS = {
     },
     "backbone_trained": {
         "name": "Backbone + Entrenado",
-        "embedder": FacenetPyTorchEmbedder,
-        "dim": 256,
-        "threshold": 0.55,
-        "duplicate_threshold": 0.65
+        "embedder": FaceNetEmbedder,
+        "dim": 512,
+        "threshold": 0.7,
+        "duplicate_threshold": 0.7
     }
 }
