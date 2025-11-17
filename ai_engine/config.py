@@ -13,8 +13,8 @@ USE_NORMALIZATION = True
 INDEX_TYPE = "FlatL2"
 
 # Configuraciones de Clasificador 
-DATA_DIR = "data"
-MODEL_DIR = "model"
+DATA_DIR = "ai_engine/data"          
+MODEL_DIR = "ai_engine/model"        
 MODEL_PATH = f"{MODEL_DIR}/best_model.pth"
 
 #Tamaño de las imagenes y del batch
